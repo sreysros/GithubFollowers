@@ -1,16 +1,14 @@
 //
-//  CustomImageView.swift
+//  CustomAlertView.swift
 //  GitHubFollowers
 //
-//  Created by SreySros on 9/8/22.
+//  Created by SreySros on 27/8/22.
 //
 
 import UIKit
 
-class CustomImageView: UIImageView {
-    
-    let placeholderImage = UIImage(named: "avatar-placeholder")!
-    
+class CustomAlertView: UIView {
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -21,9 +19,11 @@ class CustomImageView: UIImageView {
     }
     
     func configure() {
-        layer.cornerRadius = 10
-        clipsToBounds = true
-        image = placeholderImage
+        backgroundColor = .systemBackground
+        layer.cornerRadius = 16
+        layer.borderWidth = 2
+        layer.borderColor = UIColor.white.cgColor
         translatesAutoresizingMaskIntoConstraints = false
     }
+
 }
