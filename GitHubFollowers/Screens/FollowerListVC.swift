@@ -7,10 +7,6 @@
 
 import UIKit
 
-protocol FollowerListVCDelegate: AnyObject {
-    func didRequestFollowers(for username: String)
-}
-
 class FollowerListVC: CustomLoadingViewController {
     
     enum Section {
@@ -25,6 +21,7 @@ class FollowerListVC: CustomLoadingViewController {
     var page: Int = 1
     var hasMoreFollower: Bool = true
     var isSearching: Bool = false
+
     
     init(userName: String) {
         super.init(nibName: nil, bundle: nil)
@@ -46,6 +43,7 @@ class FollowerListVC: CustomLoadingViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
     }
     
@@ -76,26 +74,34 @@ class FollowerListVC: CustomLoadingViewController {
     
     func getFollowers(username: String, page: Int) {
         showLoadingView()
-        NetworkManager.shared.getFollowers(for: userName, page: page) {[weak self] result in
-            guard let self = self else { return }
-            self.dismissLoadingView()
-            switch result {
-            case .success(let followers):
-                if followers.count < 50 { self.hasMoreFollower = false }
-                self.followers.append(contentsOf: followers)
-                
-                if self.followers.isEmpty {
-                    let message = "This user doesn't have any followers. Go follow them 😀."
-                    DispatchQueue.main.async {
-                        self.showEmptyState(with: message, in: self.view)
-                        return
-                    }
+        Task {
+            do {
+                let followers = try await NetworkManager.shared.getFollowers(for: username, page: page)
+                updateUI(with: followers)
+                dismissLoadingView()
+            } catch {
+                if let customError = error as? CustomError {
+                    presentCustomAlert(title: "Bad Stuff happened", message: customError.rawValue, buttonTitle: "Ok")
+                } else {
+                    presentDefaultError()
                 }
-                self.updateData(on: self.followers)
-            case .failure(let error):
-                self.presentCustomAlertOnMainThread(title: "Error", message: error.rawValue, buttonTitle: "Ok")
+                dismissLoadingView()
             }
         }
+    }
+    
+    func updateUI(with followers: [Follower]) {
+        if followers.count < 50 { self.hasMoreFollower = false }
+        self.followers.append(contentsOf: followers)
+        
+        if self.followers.isEmpty {
+            let message = "This user doesn't have any followers. Go follow them."
+            DispatchQueue.main.async {
+                self.showEmptyState(with: message, in: self.view)
+                return
+            }
+        }
+        self.updateData(on: self.followers)
     }
     
     func configureDataSource() {
@@ -118,26 +124,36 @@ class FollowerListVC: CustomLoadingViewController {
     @objc func addButtonTapped() {
         showLoadingView()
         
-        NetworkManager.shared.getUserInfo(for: userName) { [weak self] result in
-            guard let self = self else { return }
-            self.dismissLoadingView()
-            
-            switch result {
-            case .success(let user):
-                let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
-                
-                PersistenceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
-                    guard let self = self else { return }
-                    
-                    guard let error = error else {
-                        self.presentCustomAlertOnMainThread(title: "Success!", message: "You have added this user to favorite successfully", buttonTitle: "Ok")
-                        return
-                    }
-                    self.presentCustomAlertOnMainThread(title: "Somthing went wrong", message: error.rawValue, buttonTitle: " Ok")
+        Task {
+            do {
+                let user = try await NetworkManager.shared.getUserInfo(for: userName)
+                addUserToFavorite(user: user)
+                dismissLoadingView()
+            } catch {
+                if let customError = error as? CustomError {
+                    presentCustomAlert(title: "Something went wrong", message: customError.rawValue, buttonTitle: "Ok")
+                } else {
+                    presentDefaultError()
                 }
-            case .failure(let error):
-                self.presentCustomAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+                dismissLoadingView()
             }
+        }
+    }
+    
+    func addUserToFavorite(user: User) {
+        let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
+        PersistenceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
+            guard let self = self else { return }
+            guard let error = error else {
+                DispatchQueue.main.async {
+                    self.presentCustomAlert(title: "Success!", message: "You have success favorites", buttonTitle: "Horray")
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                self.presentCustomAlert(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+            }
+            
         }
     }
 }
@@ -158,9 +174,11 @@ extension FollowerListVC: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let activeArray = isSearching ? filterFollower : followers
         let follower = activeArray[indexPath.item]
+        
         let destVC = UserInfoVC()
         destVC.username = follower.login
         destVC.delegate = self
+        
         let navController = UINavigationController(rootViewController: destVC)
         present(navController, animated: true)
         
@@ -170,7 +188,9 @@ extension FollowerListVC: UICollectionViewDelegate {
 extension FollowerListVC: UISearchResultsUpdating, UISearchBarDelegate {
     func updateSearchResults(for searchController: UISearchController) {
         guard let filter = searchController.searchBar.text, !filter.isEmpty else {
+            filterFollower.removeAll()
             updateData(on: followers)
+            isSearching = false
             return
         }
         isSearching = true
@@ -184,7 +204,7 @@ extension FollowerListVC: UISearchResultsUpdating, UISearchBarDelegate {
     }
 }
 
-extension FollowerListVC: FollowerListVCDelegate {
+extension FollowerListVC: UserInfoVCDelegate {
     func didRequestFollowers(for username: String) {
         self.userName = username
         title = username

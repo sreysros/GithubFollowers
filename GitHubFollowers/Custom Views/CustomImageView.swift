@@ -9,6 +9,7 @@ import UIKit
 
 class CustomImageView: UIImageView {
     
+    let cache               = NetworkManager.shared.cache
     let placeholderImage = UIImage(named: "avatar-placeholder")!
     
     override init(frame: CGRect) {
@@ -25,5 +26,9 @@ class CustomImageView: UIImageView {
         clipsToBounds = true
         image = placeholderImage
         translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    func downloadImage(fromUrl url: String) {
+        Task { image = await NetworkManager.shared.downloadImage(from: url) ?? placeholderImage}
     }
 }

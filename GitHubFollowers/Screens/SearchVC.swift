@@ -65,7 +65,7 @@ class SearchVC: UIViewController {
     
     @objc func pushToFollowerListVC() {
         guard isUsernameEnter else {
-            presentCustomAlertOnMainThread(title: "Notice", message: "Username is empty, please enter username 🧐", buttonTitle: "Ok")
+            presentCustomAlert(title: "Notice", message: "Username is empty, please enter username", buttonTitle: "Ok")
             return
         }
         
@@ -89,6 +89,7 @@ class SearchVC: UIViewController {
 
 extension SearchVC: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        pushToFollowerListVC()
         return true
     }
 }
