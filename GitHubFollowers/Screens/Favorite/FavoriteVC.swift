@@ -9,11 +9,13 @@ import UIKit
 
 class FavoriteVC: CustomLoadingViewController {
     
-    let tableView = UITableView()
+    var tableView: FavoriteView!
     var favorites: [Follower] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView = FavoriteView()
+        view = tableView
         configureViewController()
         configureTableView()
     }
@@ -23,6 +25,11 @@ class FavoriteVC: CustomLoadingViewController {
         getFavorites()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
+    }
+    
     func configureViewController() {
         view.backgroundColor = .systemBackground
         title = "Favorites"
@@ -30,13 +37,10 @@ class FavoriteVC: CustomLoadingViewController {
     }
     
     func configureTableView() {
-        view.addSubview(tableView)
-        tableView.frame = view.bounds
-        tableView.rowHeight = 80
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.removeExcessCells()
-        tableView.register(FavoriteCell.self, forCellReuseIdentifier: FavoriteCell.reuseID)
+        tableView.tableView.delegate = self
+        tableView.tableView.dataSource = self
+        tableView.tableView.removeExcessCells()
+        tableView.tableView.register(FavoriteCell.self, forCellReuseIdentifier: FavoriteCell.reuseID)
     }
     
     func getFavorites() {
@@ -50,7 +54,7 @@ class FavoriteVC: CustomLoadingViewController {
                 } else {
                     self.favorites = favorites
                     DispatchQueue.main.async {
-                        self.tableView.reloadData()
+                        self.tableView.tableView.reloadData()
                         self.view.bringSubviewToFront(self.tableView)
                     }
                 }

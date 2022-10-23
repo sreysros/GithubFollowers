@@ -9,8 +9,8 @@ import UIKit
 
 struct UIHelper {
 
-    static func createThreeColumnFlowLayout(in view: UIView) -> UICollectionViewFlowLayout {
-        let width = view.bounds.width
+    static func createThreeColumnFlowLayout() -> UICollectionViewFlowLayout {
+        let width = UIScreen.main.bounds.width
         let padding: CGFloat = 12
         let minimumItemSpacing: CGFloat = 10
         let availableWidth = width - (padding * 2) - (minimumItemSpacing * 2)
