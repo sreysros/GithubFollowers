@@ -7,7 +7,21 @@
 
 import UIKit
 
+protocol CustomFollowerItemVCDelegate: AnyObject {
+    func didTapGetFollowers(for user: User)
+}
+
 class CustomFollowerItemVC: CustomItemInfoVC {
+    weak var delegate: CustomFollowerItemVCDelegate!
+    
+    init(user: User, delegate: CustomFollowerItemVCDelegate) {
+        super.init(user: user)
+        self.delegate = delegate
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +35,7 @@ class CustomFollowerItemVC: CustomItemInfoVC {
     }
     
     override func actionButtonTapped() {
-        delegate.didTapGitHubFollowers(user: user)
+        delegate.didTapGetFollowers(for: user)
     }
 
 }

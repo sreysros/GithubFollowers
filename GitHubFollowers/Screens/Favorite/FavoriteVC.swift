@@ -9,11 +9,13 @@ import UIKit
 
 class FavoriteVC: CustomLoadingViewController {
     
-    let tableView = UITableView()
+    var tableView: FavoriteView!
     var favorites: [Follower] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView = FavoriteView()
+        view = tableView
         configureViewController()
         configureTableView()
     }
@@ -23,6 +25,11 @@ class FavoriteVC: CustomLoadingViewController {
         getFavorites()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
+    }
+    
     func configureViewController() {
         view.backgroundColor = .systemBackground
         title = "Favorites"
@@ -30,13 +37,10 @@ class FavoriteVC: CustomLoadingViewController {
     }
     
     func configureTableView() {
-        view.addSubview(tableView)
-        tableView.frame = view.bounds
-        tableView.rowHeight = 80
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.removeExcessCells()
-        tableView.register(FavoriteCell.self, forCellReuseIdentifier: FavoriteCell.reuseID)
+        tableView.tableView.delegate = self
+        tableView.tableView.dataSource = self
+        tableView.tableView.removeExcessCells()
+        tableView.tableView.register(FavoriteCell.self, forCellReuseIdentifier: FavoriteCell.reuseID)
     }
     
     func getFavorites() {
@@ -50,13 +54,13 @@ class FavoriteVC: CustomLoadingViewController {
                 } else {
                     self.favorites = favorites
                     DispatchQueue.main.async {
-                        self.tableView.reloadData()
+                        self.tableView.tableView.reloadData()
                         self.view.bringSubviewToFront(self.tableView)
                     }
                 }
                 
             case .failure(let error):
-                self.presentCustomAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+                self.presentCustomAlert(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
             }
         }
     }
@@ -82,19 +86,15 @@ extension FavoriteVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        let favorite = favorites[indexPath.row]
-        favorites.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .left)
         
-        PersistenceManager.updateWith(favorite: favorite, actionType: .remove) { [weak self] error in
+        PersistenceManager.updateWith(favorite: favorites[indexPath.row], actionType: .remove) { [weak self] error in
             guard let self = self else { return }
             guard let error = error else {
                 self.favorites.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .left)
                 return }
-            self.presentCustomAlertOnMainThread(title: "Unable to remove", message: error.rawValue, buttonTitle: "Ok")
+            self.presentCustomAlert(title: "Unable to remove", message: error.rawValue, buttonTitle: "Ok")
         }
-        
     }
     
     

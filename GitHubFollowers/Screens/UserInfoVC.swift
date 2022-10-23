@@ -9,13 +9,14 @@ import UIKit
 import SafariServices
 
 protocol UserInfoVCDelegate: AnyObject {
-    
-    func didTapGitHubProfile(user: User)
-    func didTapGitHubFollowers(user: User)
+    func didRequestFollowers(for username: String)
 }
 
-class UserInfoVC: UIViewController {
-
+class UserInfoVC: CustomLoadingViewController {
+    
+    let scrollView = UIScrollView()
+    let contentView = UIView()
+    
     let headerView = UIView()
     let itemViewOne = UIView()
     let itemViewTwo = UIView()
@@ -23,11 +24,12 @@ class UserInfoVC: UIViewController {
     var itemViews: [UIView] = []
     
     var username: String!
-    weak var delegate: FollowerListVCDelegate!
+    weak var delegate: UserInfoVCDelegate!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureViewController()
+        configureScrollView()
         layoutUI()
         getUserInfo()
     }
@@ -38,28 +40,43 @@ class UserInfoVC: UIViewController {
         navigationItem.rightBarButtonItem = doneButton
     }
     
-    func getUserInfo() {
-        NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
-            guard let self = self else { return }
+    func configureScrollView() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            switch result {
-            case .success(let user):
-                DispatchQueue.main.async { self.configureElementUI(with: user) }
-            case .failure(let error):
-                self.presentCustomAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.heightAnchor.constraint(equalToConstant: 600)
+        ])
+    }
+    
+    func getUserInfo() {
+        Task {
+            do {
+                let user = try await NetworkManager.shared.getUserInfo(for: username)
+                configureElementUI(with: user)
+            } catch {
+                if let customError = error as? CustomError {
+                    presentCustomAlert(title: "Something Went Wrong", message: customError.rawValue, buttonTitle: "Ok")
+                } else {
+                    presentDefaultError()
+                }
             }
         }
     }
     
     func configureElementUI(with user: User) {
-        let repoItemVC = CustomRepoItemVC(user: user)
-        repoItemVC.delegate = self
-        
-        let followerItemVC = CustomFollowerItemVC(user: user)
-        followerItemVC.delegate = self
-        
-        self.add(childVC: repoItemVC, to: self.itemViewOne)
-        self.add(childVC: followerItemVC, to: self.itemViewTwo)
+        self.add(childVC: CustomRepoItemVC(user: user, delegate: self), to: self.itemViewOne)
+        self.add(childVC: CustomFollowerItemVC(user: user, delegate: self), to: self.itemViewTwo)
         self.add(childVC: CustomUserInfoHeaderVC(user: user), to: self.headerView)
         self.dateLabel.text = "GitHub Since \(user.createdAt.convertToMonthYearFormat())"
     }
@@ -108,23 +125,25 @@ class UserInfoVC: UIViewController {
 
 }
 
-extension UserInfoVC: UserInfoVCDelegate {
-    func didTapGitHubProfile(user: User) {
+extension UserInfoVC: CustomRepoItemVCDelegate {
+    func didTapGitHubProfile(for user: User) {
         guard let url = URL(string: user.htmlUrl) else {
-            presentCustomAlertOnMainThread(title: "Invalid URL", message: "The url attached to this user is invalid.", buttonTitle: "Ok")
+            presentCustomAlert(title: "Invalid URL", message: "The URL attached to this user is invalid.", buttonTitle: "Ok")
             return
         }
         presentSafariVC(with: url)
     }
     
-    func didTapGitHubFollowers(user: User) {
+}
+
+extension UserInfoVC: CustomFollowerItemVCDelegate {
+    func didTapGetFollowers(for user: User) {
         guard user.followers != 0 else {
-            presentCustomAlertOnMainThread(title: "No Followers", message: "This user has no followers. What a shame ", buttonTitle: "Ok")
+            presentCustomAlert(title: "No Followers", message: "This user has no followers.", buttonTitle: "So Sad!")
             return
         }
         delegate.didRequestFollowers(for: user.login)
         dismissVC()
     }
-    
     
 }
