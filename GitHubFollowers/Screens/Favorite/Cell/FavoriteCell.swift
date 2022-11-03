@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class FavoriteCell: UITableViewCell {
     
@@ -38,17 +39,20 @@ class FavoriteCell: UITableViewCell {
         accessoryType = .disclosureIndicator
         let padding: CGFloat = 12
         
-        NSLayoutConstraint.activate([
-            avatarImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            avatarImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: padding),
-            avatarImageView.heightAnchor.constraint(equalToConstant: 60),
-            avatarImageView.widthAnchor.constraint(equalToConstant: 60),
-            
-            usernameLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            usernameLabel.leadingAnchor.constraint(equalTo: avatarImageView.trailingAnchor, constant: 24),
-            usernameLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -padding),
-            usernameLabel.heightAnchor.constraint(equalToConstant: 40)
-        ])
+        avatarImageView.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.equalTo(layoutMarginsGuide).inset(padding)
+            $0.size.equalTo(60)
+        }
+        
+        usernameLabel.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.equalTo(avatarImageView.snp.trailing).inset(24)
+            $0.trailing.equalToSuperview().inset(24)
+            $0.height.equalTo(40)
+        }
+        
+        
     }
     
 }

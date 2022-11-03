@@ -89,7 +89,6 @@ class FollowerListVC: CustomLoadingViewController {
     func updateUI(with fan: [Follower]) {
         if fan.count < 50 { self.hasMoreFollower = false }
         self.followers.append(contentsOf: fan)
-        
         if self.followers.isEmpty {
             let message = "This user doesn't have any followers. Go follow them."
             DispatchQueue.main.async {
@@ -194,13 +193,15 @@ extension FollowerListVC: UISearchResultsUpdating, UISearchBarDelegate {
     }
 }
 
+// still wrong get followers of user info
+
 extension FollowerListVC: UserInfoVCDelegate {
     func didRequestFollowers(for username: String) {
         isSearching = false
         self.userName = username
         title = username
         page = 1
-        followers.removeAll()
+//        followers.removeAll()
         filterFollower.removeAll()
         customView.collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
         getFollowers(username: username, page: page)

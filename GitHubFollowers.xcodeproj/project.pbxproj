@@ -48,6 +48,7 @@
 		3CB6CF4528BA77870073D9AD /* View+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB6CF4428BA77870073D9AD /* View+Ext.swift */; };
 		3CB6CF4728BA7CAB0073D9AD /* UITableView + Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB6CF4628BA7CAB0073D9AD /* UITableView + Ext.swift */; };
 		75F33542175711C8270CE43B /* Pods_GitHubFollowers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 591621835D9D098F349585A3 /* Pods_GitHubFollowers.framework */; };
+		F2E043CA29136A8000BA5CD4 /* UserInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E043C929136A8000BA5CD4 /* UserInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -96,6 +97,7 @@
 		591621835D9D098F349585A3 /* Pods_GitHubFollowers.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GitHubFollowers.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		59674DFD608EB7CBDD7CFB50 /* Pods-GitHubFollowers.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GitHubFollowers.release.xcconfig"; path = "Target Support Files/Pods-GitHubFollowers/Pods-GitHubFollowers.release.xcconfig"; sourceTree = "<group>"; };
 		A7FD459B5EFD7D7C0CAB4D7C /* Pods-GitHubFollowers.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GitHubFollowers.debug.xcconfig"; path = "Target Support Files/Pods-GitHubFollowers/Pods-GitHubFollowers.debug.xcconfig"; sourceTree = "<group>"; };
+		F2E043C929136A8000BA5CD4 /* UserInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -231,12 +233,11 @@
 		3C44AF582898193B00E850C2 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				F2E043C829136A6100BA5CD4 /* UserDetail */,
 				3C31734528D628E200E7B776 /* FollowerList */,
 				3C31734228D6270F00E7B776 /* Favorite */,
 				3C31733F28CE3CB500E7B776 /* Search */,
 				3C44AF7E28B2957A00E850C2 /* ItemInfoVC */,
-				3C44AF6E28ABE8CF00E850C2 /* UserInfoVC.swift */,
-				3C44AF7428AD43E300E850C2 /* CustomUserInfoHeaderVC.swift */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
@@ -303,6 +304,16 @@
 				59674DFD608EB7CBDD7CFB50 /* Pods-GitHubFollowers.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		F2E043C829136A6100BA5CD4 /* UserDetail */ = {
+			isa = PBXGroup;
+			children = (
+				3C44AF6E28ABE8CF00E850C2 /* UserInfoVC.swift */,
+				3C44AF7428AD43E300E850C2 /* CustomUserInfoHeaderVC.swift */,
+				F2E043C929136A8000BA5CD4 /* UserInfoView.swift */,
+			);
+			path = UserDetail;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -453,6 +464,7 @@
 				3C44AF532896DD6500E850C2 /* CustomAlertVC.swift in Sources */,
 				3C44AF6928A2AE3500E850C2 /* CustomImageView.swift in Sources */,
 				3C44AF4F2896D6D100E850C2 /* CustomLabel.swift in Sources */,
+				F2E043CA29136A8000BA5CD4 /* UserInfoView.swift in Sources */,
 				3C31734428D6272600E7B776 /* FavoriteView.swift in Sources */,
 				3CB6CF3A28B7C6B30073D9AD /* FavoriteCell.swift in Sources */,
 				3C44AF7128AD411D00E850C2 /* CustomSecondaryTitleLabel.swift in Sources */,
